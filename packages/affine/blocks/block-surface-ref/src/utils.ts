@@ -1,4 +1,23 @@
-import { html } from 'lit';
+import { isFrameBlock } from '@blocksuite/affine-block-frame';
+import type { SurfaceBlockComponent } from '@blocksuite/affine-block-surface';
+import { ExportManager } from '@blocksuite/affine-block-surface';
+import type { SurfaceRefBlockComponent } from '@blocksuite/affine-block-surface-ref';
+import {
+  GroupElementModel,
+  MindmapElementModel,
+  ShapeElementModel,
+} from '@blocksuite/affine-model';
+import { BlockSuiteError } from '@blocksuite/global/exceptions';
+import { Bound } from '@blocksuite/global/gfx';
+import { assertType } from '@blocksuite/global/utils';
+import {
+  EdgelessIcon,
+  FrameIcon,
+  GroupIcon,
+  MindmapIcon,
+} from '@blocksuite/icons/lit';
+import { GfxControllerIdentifier, type GfxModel } from '@blocksuite/std/gfx';
+import { html, type TemplateResult } from 'lit';
 
 export const noContentPlaceholder = html`
   <svg
@@ -97,3 +116,83 @@ export const noContentPlaceholder = html`
     />
   </svg>
 `;
+
+export const surfaceRefToBlob = async (
+  surfaceRefBlock: SurfaceRefBlockComponent
+): Promise<Blob | null> => {
+  const { referenceModel, previewEditor } = surfaceRefBlock;
+  if (!referenceModel || !previewEditor) return null;
+
+  const exportManager = previewEditor.std.get(ExportManager);
+  const gfx = previewEditor.std.get(GfxControllerIdentifier);
+
+  const { surface } = gfx;
+  if (!surface) return null;
+  const surfaceBlock = previewEditor.std.view.getBlock(surface.id);
+  if (!surfaceBlock) return null;
+  assertType<SurfaceBlockComponent>(surfaceBlock);
+
+  const canvas = await exportManager.edgelessToCanvas(
+    surfaceBlock.renderer,
+    Bound.deserialize(referenceModel.xywh),
+    gfx,
+    undefined,
+    undefined,
+    { zoom: surfaceBlock.renderer.viewport.zoom }
+  );
+
+  if (!canvas) {
+    throw new BlockSuiteError(
+      BlockSuiteError.ErrorCode.ValueNotExists,
+      'Failed to export edgeless to canvas'
+    );
+  }
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => (blob ? resolve(blob) : reject(null)), 'image/png');
+  });
+};
+
+export const writeImageBlobToClipboard = async (blob: Blob) => {
+  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+};
+
+export const TYPE_ICON_MAP: {
+  [key: string]: {
+    name: string;
+    icon: TemplateResult;
+  };
+} = {
+  'affine:frame': {
+    name: 'Frame',
+    icon: FrameIcon(),
+  },
+  group: {
+    name: 'Group',
+    icon: GroupIcon(),
+  },
+  mindmap: {
+    name: 'Mind map',
+    icon: MindmapIcon(),
+  },
+  edgeless: {
+    name: 'Edgeless content',
+    icon: EdgelessIcon(),
+  },
+};
+
+export const getReferenceModelTitle = (model: GfxModel) => {
+  if (model instanceof GroupElementModel) {
+    return model.title.toString();
+  }
+  if (isFrameBlock(model)) {
+    return model.props.title.toString();
+  }
+  if (model instanceof MindmapElementModel) {
+    const rootElement = model.tree.element;
+    if (rootElement instanceof ShapeElementModel) {
+      return rootElement.text?.toString() ?? '';
+    }
+  }
+  return null;
+};
