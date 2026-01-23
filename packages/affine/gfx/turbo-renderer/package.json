@@ -10,11 +10,11 @@
   "author": "toeverything",
   "license": "MIT",
   "dependencies": {
-    "@blocksuite/block-std": "workspace:*",
-    "@blocksuite/global": "workspace:*",
-    "@blocksuite/store": "workspace:*",
+    "@blocksuite/block-std": "0.6.0",
+    "@blocksuite/global": "0.4.0",
+    "@blocksuite/store": "0.1.0",
     "@types/lodash-es": "^4.17.12",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "^4.17.23",
     "rxjs": "^7.8.1"
   },
   "exports": {
