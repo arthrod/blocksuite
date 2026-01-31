@@ -23,7 +23,7 @@
     "preview": "yarn run typedoc && vitepress preview"
   },
   "dependencies": {
-    "@blocksuite/affine": "workspace:*",
+    "@blocksuite/affine": "0.17.13",
     "date-fns": "^4.0.0",
     "markdown-it-container": "^4.0.0",
     "vitepress-plugin-sandpack": "^1.1.4"
