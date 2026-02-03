@@ -10,9 +10,9 @@
   "author": "toeverything",
   "license": "MIT",
   "dependencies": {
-    "@blocksuite/affine-model": "workspace:*",
-    "@blocksuite/block-std": "workspace:*",
-    "@blocksuite/global": "workspace:*",
+    "@blocksuite/affine-model": "0.16.0",
+    "@blocksuite/block-std": "0.6.0",
+    "@blocksuite/global": "0.4.0",
     "@blocksuite/icons": "^2.2.6",
     "@blocksuite/store": "workspace:*",
     "@floating-ui/dom": "^1.6.13",
